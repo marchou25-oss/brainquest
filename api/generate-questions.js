@@ -6,7 +6,13 @@ const CAT_NAMES = {
   maths:    "les mathématiques (arithmétique, géométrie, logique, algèbre, probabilités…)",
   francais: "la langue française (grammaire, orthographe, vocabulaire, figures de style, littérature…)",
   sciences: "les sciences (biologie, chimie, physique, astronomie, environnement, corps humain…)",
-  histoire: "l'histoire et la géographie (France, monde, grandes dates, personnages, pays, capitales…)"
+  histoire: "l'histoire et la géographie (France, monde, grandes dates, personnages, pays, capitales…)",
+  sport:    "le sport (football, tennis, basket, JO, champions du monde, records, athlètes célèbres, règles des sports…)",
+  cinema:   "le cinéma et les séries (films cultes, acteurs, réalisateurs, oscars, séries populaires, personnages fictifs…)",
+  musique:  "la musique (artistes français et internationaux, albums mythiques, genres musicaux, histoire de la musique, chansons célèbres…)",
+  tech:     "la technologie et les jeux vidéo (inventions, applications célèbres, personnages de jeux vidéo, histoire du web, réseaux sociaux, gadgets…)",
+  monde:    "le monde et la société (pays, cultures, traditions, gastronomie mondiale, phénomènes sociaux, records mondiaux, drapeaux…)",
+  random:   "un mélange surprise de thèmes très variés : chaque question doit venir d'un domaine DIFFÉRENT parmi culture générale, maths, français, sciences, histoire, sport, cinéma, musique, technologie et monde. Les 5 questions doivent absolument couvrir 5 domaines distincts, une question par domaine."
 };
 
 module.exports = async function (req, res) {
