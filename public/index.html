@@ -73,6 +73,18 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 .cat-pb{height:4px;background:#E5E7EB;border-radius:99px;margin-top:10px;overflow:hidden}
 .cat-pf{height:4px;border-radius:99px;transition:width .6s}
 .cat.c1 .cat-pf{background:var(--p)}.cat.c2 .cat-pf{background:var(--c)}.cat.c3 .cat-pf{background:var(--pk)}.cat.c4 .cat-pf{background:var(--g)}.cat.c5 .cat-pf{background:var(--y)}
+.cat.c6{border-color:rgba(34,197,94,0.25)}.cat.c6 .cat-pf{background:#22C55E}
+.cat.c7{border-color:rgba(239,68,68,0.25)}.cat.c7 .cat-pf{background:#EF4444}
+.cat.c8{border-color:rgba(236,72,153,0.25)}.cat.c8 .cat-pf{background:#EC4899}
+.cat.c9{border-color:rgba(59,130,246,0.25)}.cat.c9 .cat-pf{background:#3B82F6}
+.cat.c10{border-color:rgba(20,184,166,0.25)}.cat.c10 .cat-pf{background:#14B8A6}
+.random-card{background:linear-gradient(135deg,#7C3AED,#EC4899 50%,#F97316);border-radius:var(--r16);padding:1.1rem 1.4rem;color:#fff;cursor:pointer;display:flex;align-items:center;gap:12px;box-shadow:0 6px 20px rgba(124,58,237,0.35);transition:transform .2s;margin-bottom:1.25rem;position:relative;overflow:hidden}
+.random-card::before{content:'';position:absolute;top:-30px;right:-30px;width:110px;height:110px;background:rgba(255,255,255,0.1);border-radius:50%}
+.random-card:hover{transform:translateY(-2px);box-shadow:0 10px 28px rgba(124,58,237,0.45)}.random-card:active{transform:scale(0.97)}
+.random-ico{font-size:34px;flex-shrink:0;animation:spin 4s linear infinite}
+@keyframes spin{0%,100%{transform:rotate(0deg)}25%{transform:rotate(10deg)}75%{transform:rotate(-10deg)}}
+.random-info h3{font-size:15px;font-weight:700}.random-info p{font-size:11px;opacity:0.85;margin-top:2px}
+.random-badge{margin-left:auto;background:rgba(255,255,255,0.25);padding:5px 12px;border-radius:99px;font-size:11px;font-weight:700;flex-shrink:0}
 .bdg-row{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;scrollbar-width:none}
 .bdg-row::-webkit-scrollbar{display:none}
 .bdg{flex-shrink:0;background:var(--white);border:1px solid var(--bd);border-radius:var(--r10);padding:10px 12px;text-align:center;min-width:72px}
@@ -301,12 +313,22 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
       </button>
     </div>
     <div class="sec-t">Choisir une catégorie</div>
+    <div class="random-card" onclick="launch('random')">
+      <div class="random-ico">🎲</div>
+      <div class="random-info"><h3>Mode Aléatoire</h3><p>Mélange surprise de toutes les catégories · Questions inédites</p></div>
+      <div class="random-badge">SURPRISE !</div>
+    </div>
     <div class="cats">
       <div class="cat c1" onclick="launch('culture')"><span class="cat-e">🌍</span><div class="cat-n">Culture générale</div><div class="cat-s">Questions IA inédites</div><div class="cat-pb"><div class="cat-pf" id="pr-culture" style="width:0%"></div></div></div>
       <div class="cat c2" onclick="launch('maths')"><span class="cat-e">🧮</span><div class="cat-n">Maths</div><div class="cat-s">Questions IA inédites</div><div class="cat-pb"><div class="cat-pf" id="pr-maths" style="width:0%"></div></div></div>
       <div class="cat c3" onclick="launch('francais')"><span class="cat-e">✏️</span><div class="cat-n">Français</div><div class="cat-s">Questions IA inédites</div><div class="cat-pb"><div class="cat-pf" id="pr-francais" style="width:0%"></div></div></div>
       <div class="cat c4" onclick="launch('sciences')"><span class="cat-e">🔬</span><div class="cat-n">Sciences</div><div class="cat-s">Questions IA inédites</div><div class="cat-pb"><div class="cat-pf" id="pr-sciences" style="width:0%"></div></div></div>
       <div class="cat c5" onclick="launch('histoire')"><span class="cat-e">📜</span><div class="cat-n">Histoire & Géo</div><div class="cat-s">Questions IA inédites</div><div class="cat-pb"><div class="cat-pf" id="pr-histoire" style="width:0%"></div></div></div>
+      <div class="cat c6" onclick="launch('sport')"><span class="cat-e">⚽</span><div class="cat-n">Sport</div><div class="cat-s">Questions IA inédites</div><div class="cat-pb"><div class="cat-pf" id="pr-sport" style="width:0%"></div></div></div>
+      <div class="cat c7" onclick="launch('cinema')"><span class="cat-e">🎬</span><div class="cat-n">Cinéma & Séries</div><div class="cat-s">Questions IA inédites</div><div class="cat-pb"><div class="cat-pf" id="pr-cinema" style="width:0%"></div></div></div>
+      <div class="cat c8" onclick="launch('musique')"><span class="cat-e">🎵</span><div class="cat-n">Musique</div><div class="cat-s">Questions IA inédites</div><div class="cat-pb"><div class="cat-pf" id="pr-musique" style="width:0%"></div></div></div>
+      <div class="cat c9" onclick="launch('tech')"><span class="cat-e">💻</span><div class="cat-n">Tech & Jeux vidéo</div><div class="cat-s">Questions IA inédites</div><div class="cat-pb"><div class="cat-pf" id="pr-tech" style="width:0%"></div></div></div>
+      <div class="cat c10" onclick="launch('monde')"><span class="cat-e">🌐</span><div class="cat-n">Monde & Société</div><div class="cat-s">Questions IA inédites</div><div class="cat-pb"><div class="cat-pf" id="pr-monde" style="width:0%"></div></div></div>
     </div>
     <div class="sec-t" style="margin-top:1.25rem">Mes badges</div>
     <div class="bdg-row" id="bdgRow"></div>
@@ -374,7 +396,7 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 <script>
 const LVS=["Novice","Apprenti","Explorateur","Challenger","Expert","Maître","Champion","Virtuose","Prodige","Génie","Savant","Légende"];
 const LXP=[0,100,250,500,900,1500,2300,3300,4500,6000,8000,10000];
-const CATS_P={culture:["🌍 Culture","#EDE9FE","#6D28D9"],maths:["🧮 Maths","#CFFAFE","#0E7490"],francais:["✏️ Français","#FDF4FF","#A21CAF"],sciences:["🔬 Sciences","#DCFCE7","#15803D"],histoire:["📜 Histoire","#FEF9C3","#A16207"]};
+const CATS_P={culture:["🌍 Culture","#EDE9FE","#6D28D9"],maths:["🧮 Maths","#CFFAFE","#0E7490"],francais:["✏️ Français","#FDF4FF","#A21CAF"],sciences:["🔬 Sciences","#DCFCE7","#15803D"],histoire:["📜 Histoire","#FEF9C3","#A16207"],sport:["⚽ Sport","#DCFCE7","#15803D"],cinema:["🎬 Cinéma","#FEE2E2","#991B1B"],musique:["🎵 Musique","#FCE7F3","#9D174D"],tech:["💻 Tech","#DBEAFE","#1D4ED8"],monde:["🌐 Monde","#CCFBF1","#0F766E"],random:["🎲 Aléatoire","#F3E8FF","#7C3AED"]};
 const CLRS=["#7C3AED","#F97316","#22C55E","#EAB308","#EF4444","#06B6D4","#E879F9","#F472B6"];
 const MEDALS=["🥇","🥈","🥉"];
 const BADGES=[
@@ -413,7 +435,7 @@ function renderHome(){
   document.getElementById('stG').textContent=P.games;
   document.getElementById('stS').textContent=P.bestStr+(P.bestStr>0?'🔥':'');
   document.getElementById('stB').textContent=Object.values(P.ach).filter(Boolean).length;
-  ['culture','maths','francais','sciences','histoire'].forEach(c=>{
+  ['culture','maths','francais','sciences','histoire','sport','cinema','musique','tech','monde'].forEach(c=>{
     const el=document.getElementById('pr-'+c);
     if(el)el.style.width=Math.round((P.catBest[c]||0)/5*100)+'%';
   });
@@ -459,7 +481,8 @@ function launch(cat){
 }
 
 async function genQ(cat){
-  const c=cat==='daily'?['culture','maths','francais','sciences','histoire'][Math.floor(Math.random()*5)]:cat;
+  const allCats=['culture','maths','francais','sciences','histoire','sport','cinema','musique','tech','monde'];
+  const c=cat==='daily'?allCats[Math.floor(Math.random()*allCats.length)]:cat;
   const resp=await fetch('/api/generate-questions',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({category:c})});
   if(!resp.ok)throw new Error('Erreur serveur ('+resp.status+')');
   const data=await resp.json();
