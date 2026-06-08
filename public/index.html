@@ -844,8 +844,7 @@ function showDuelJoin(){
 async function createDuel(cat){
   duelState.cat = cat;
   duelState.isCreator = true;
-  // Show loading on button
-  showScr('s-load');
+  document.getElementById('errBox').style.display='none';
   document.getElementById('ldIco').textContent = '⚔️';
   document.querySelectorAll('.ls').forEach(el => el.className='ls');
   [1,2,3,4].forEach((id,i)=>setTimeout(()=>{
