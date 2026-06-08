@@ -437,6 +437,53 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
     </div>
     <div id="lbContent"><span class="lb-loading">⏳</span></div>
   </div>
+
+  <!-- DUEL MENU -->
+  <div id="s-duel" class="scr">
+    <div class="duel-nav"><button class="bk" onclick="goHome()">←</button><div class="duel-title">⚔️ Mode Duel</div><div style="width:36px"></div></div>
+    <div class="duel-hero"><span class="dh-ico">⚔️</span><h2>Défie tes amis !</h2><p>Même questions, même timer — que le meilleur gagne</p></div>
+    <button class="duel-btn-create" onclick="showDuelCreate()">⚔️ Créer un Duel</button>
+    <button class="duel-btn-join" onclick="showDuelJoin()">🔗 Rejoindre un Duel</button>
+  </div>
+
+  <!-- DUEL CREATE -->
+  <div id="s-duel-create" class="scr">
+    <div class="duel-nav"><button class="bk" onclick="showDuelMenu()">←</button><div class="duel-title">Choisir la catégorie</div><div style="width:36px"></div></div>
+    <div class="duel-cats" id="duelCatGrid"></div>
+  </div>
+
+  <!-- DUEL WAITING -->
+  <div id="s-duel-wait" class="scr">
+    <div class="duel-nav"><button class="bk" onclick="showDuelMenu()">←</button><div class="duel-title">Ton code Duel</div><div style="width:36px"></div></div>
+    <div class="code-card">
+      <div class="code-label">Partage ce code à ton adversaire</div>
+      <div class="code-value" id="duelCodeDisplay">------</div>
+      <div class="code-sub">Valable 24 heures</div>
+      <button class="code-copy-btn" onclick="copyDuelCode()">📋 Copier le lien</button>
+    </div>
+    <div style="background:var(--white);border:1px solid var(--bd);border-radius:var(--r16);padding:1.25rem;text-align:center">
+      <div style="font-size:13px;color:var(--mu);margin-bottom:12px">Partage le code, puis joue en premier !</div>
+      <button class="nb" onclick="startDuelGame()">🚀 Je joue en premier !</button>
+    </div>
+  </div>
+
+  <!-- DUEL JOIN -->
+  <div id="s-duel-join" class="scr">
+    <div class="duel-nav"><button class="bk" onclick="showDuelMenu()">←</button><div class="duel-title">Rejoindre un Duel</div><div style="width:36px"></div></div>
+    <div style="background:var(--white);border:1px solid var(--bd);border-radius:var(--r16);padding:1.5rem;margin-bottom:12px">
+      <div style="font-size:14px;font-weight:700;margin-bottom:6px;color:var(--tx)">Entre le code de ton ami</div>
+      <input class="join-input" id="joinCodeInput" type="text" maxlength="6" placeholder="ABC123" oninput="this.value=this.value.toUpperCase()"/>
+      <button class="nb" onclick="joinDuelByCode()" style="width:100%;margin-top:8px">🔗 Rejoindre</button>
+    </div>
+    <div id="joinError" style="display:none" class="err"><div class="err-t">❌ Code invalide</div><div class="err-s" id="joinErrorMsg">Code introuvable ou expiré.</div></div>
+  </div>
+
+  <!-- DUEL RESULTS -->
+  <div id="s-duel-res" class="scr">
+    <div class="duel-nav"><button class="bk" onclick="goHome()">←</button><div class="duel-title">⚔️ Résultats du Duel</div><div style="width:36px"></div></div>
+    <div id="duelResContent"></div>
+  </div>
+
 </div>
 
 <script>
