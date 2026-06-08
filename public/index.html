@@ -834,6 +834,228 @@ function showDuelCreate(){
     </div>`).join('');
   showScr('duel-create');
 }
+function showDuelJoin(){
+  document.getElementById('joinCodeInput').value = '';
+  document.getElementById('joinError').style.display = 'none';
+  showScr('duel-join');
+}
+
+async function createDuel(cat){
+  duelState.cat = cat;
+  duelState.isCreator = true;
+  document.getElementById('errBox').style.display='none';
+  document.getElementById('ldIco').textContent = '⚔️';
+  document.querySelectorAll('.ls').forEach(el => el.className='ls');
+  [1,2,3,4].forEach((id,i)=>setTimeout(()=>{
+    [1,2,3,4].slice(0,i).forEach(p=>{ const el=document.getElementById('ls'+p); if(el&&el.className.includes('act'))el.className='ls done'; });
+    const el=document.getElementById('ls'+id); if(el) el.className='ls act';
+  },[0,600,1200,1800][i]));
+  showScr('load');
+  try {
+    const resp = await fetch('/api/create-duel', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ category: cat, playerName: P.savedName || 'Joueur 1' })
+    });
+    const data = await resp.json();
+    if (data.error) throw new Error(data.error);
+    duelState.code = data.code;
+    duelState.questions = data.questions;
+    document.getElementById('duelCodeDisplay').textContent = data.code;
+    showScr('duel-wait');
+  } catch(e) {
+    document.getElementById('errBox').style.display = 'block';
+    document.getElementById('errMsg').textContent = e.message;
+    document.getElementById('ldIco').textContent = '⚠️';
+  }
+}
+
+function copyDuelCode(){
+  const code = duelState.code;
+  const url = window.location.origin + '?duel=' + code;
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(url).then(()=>{
+      const btn = document.querySelector('.code-copy-btn');
+      if(btn){ btn.textContent = '✅ Lien copié !'; setTimeout(()=>{ btn.textContent = '📋 Copier le lien'; }, 2500); }
+    });
+  } else {
+    prompt('Copie ce lien :', url);
+  }
+}
+
+function startDuelGame(){
+  G.cat = duelState.cat;
+  G.isDuel = true;
+  G.idx = 0; G.done = false; G.lives = 3; G.combo = 0;
+  G.sXP = 0; G.sPts = 0; G.ok = 0; G.total = duelState.questions.length; G.streak = 0;
+  G.qs = duelState.questions;
+  P.games++; saveP();
+  showScr('quiz'); updHUD(); renderQ();
+}
+
+async function joinDuelByCode(){
+  const code = document.getElementById('joinCodeInput').value.trim().toUpperCase();
+  document.getElementById('joinError').style.display = 'none';
+  if (code.length !== 6) {
+    document.getElementById('joinError').style.display = 'block';
+    document.getElementById('joinErrorMsg').textContent = 'Le code doit faire 6 caractères.';
+    return;
+  }
+  try {
+    const resp = await fetch('/api/duel?code=' + code);
+    const data = await resp.json();
+    if (data.error) throw new Error(data.error);
+    duelState.code = code;
+    duelState.questions = data.duel.questions;
+    duelState.cat = data.duel.category;
+    duelState.isCreator = false;
+    startDuelGame();
+  } catch(e) {
+    document.getElementById('joinError').style.display = 'block';
+    document.getElementById('joinErrorMsg').textContent = e.message || 'Code introuvable ou expiré.';
+  }
+}
+
+async function saveDuelScore(pts, xp, ok, total){
+  const code = duelState.code;
+  if(!code) return null;
+  const name = P.savedName || (duelState.isCreator ? 'Joueur 1' : 'Joueur 2');
+  try {
+    const resp = await fetch('/api/duel?code=' + code, {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ code, name, score: pts, xp, correct: ok, total })
+    });
+    return await resp.json();
+  } catch(e) { return null; }
+}
+
+async function checkDuelResults(){
+  const code = duelState.code;
+  if(!code) return;
+  const btn = document.getElementById('refreshDuelBtn');
+  if(btn){ btn.textContent = '⏳ Chargement...'; btn.disabled = true; }
+  try {
+    const resp = await fetch('/api/duel?code=' + code);
+    const data = await resp.json();
+    if(data.duel && data.duel.players && data.duel.players.length >= 2){
+      const area = document.getElementById('duelCompareArea');
+      if(area){ area.innerHTML = renderDuelResults(data.duel.players); conf(15); }
+    } else {
+      if(btn){ btn.textContent = '🔄 Actualiser'; btn.disabled = false; }
+      const area = document.getElementById('duelCompareArea');
+      if(area){
+        const p = area.querySelector('p');
+        if(p) p.textContent = 'Ton ami n\'a pas encore terminé. Réessaie dans quelques instants !';
+      }
+    }
+  } catch(e) {
+    if(btn){ btn.textContent = '🔄 Actualiser'; btn.disabled = false; }
+  }
+}
+
+// Override renderRes for duel mode
+const _origRenderRes = renderRes;
+renderRes = async function(){
+  if (!G.isDuel) { _origRenderRes(); return; }
+  clearT();
+  const pct = Math.round(G.ok/G.total*100);
+  saveP();
+  lastScore = {pts:G.sPts, xp:G.sXP, cat:G.cat, ok:G.ok, total:G.total};
+  const myPts = G.sPts; const myXP = G.sXP;
+  G.isDuel = false;
+
+  const e = pct>=80?'🏆':pct>=60?'🎉':pct>=40?'👏':'💪';
+  document.getElementById('resC').innerHTML = `
+    <div class="res-w">
+      <div class="duel-badge">⚔️ DUEL</div>
+      <div class="res-big">${e}</div>
+      <div class="res-t">Ton score : ${myPts} pts</div>
+      <div class="res-s">${G.ok} / ${G.total} bonnes réponses · ${pct}%</div>
+      <div class="res-st">
+        <div style="background:#EDE9FE"><div class="rv" style="color:#7C3AED">${myPts}</div><div class="rl">Points</div></div>
+        <div style="background:#FFF7ED"><div class="rv" style="color:#F97316">+${myXP}</div><div class="rl">XP</div></div>
+        <div style="background:#DCFCE7"><div class="rv" style="color:#22C55E">${pct}%</div><div class="rl">Précision</div></div>
+      </div>
+      <div id="duelCompareArea">
+        <div class="waiting-card"><span class="wi">⏳</span><h3>Sauvegarde en cours…</h3></div>
+      </div>
+      <button class="res-btn3" style="margin-top:8px" onclick="showDuelMenu()">⚔️ Nouveau Duel</button>
+      <button class="res-btn3" onclick="goHome()">← Accueil</button>
+    </div>`;
+  showScr('res');
+  if(pct>=80) conf(20);
+
+  // Save score then update compare area
+  const duelData = await saveDuelScore(myPts, myXP, G.ok, G.total);
+  const area = document.getElementById('duelCompareArea');
+  if(!area) return;
+
+  if(duelData && duelData.players && duelData.players.length >= 2){
+    area.innerHTML = renderDuelResults(duelData.players);
+    conf(15);
+  } else {
+    area.innerHTML = `
+      <div class="waiting-card">
+        <span class="wi">⏳</span>
+        <h3>En attente de l'adversaire</h3>
+        <p>Score sauvegardé ! Partage le code <strong>${duelState.code}</strong>.<br>Quand il aura fini, clique le bouton ci-dessous.</p>
+      </div>
+      <button class="nb" id="refreshDuelBtn" onclick="checkDuelResults()" style="margin-bottom:8px">🔄 Actualiser les résultats</button>`;
+  }
+}
+
+function renderDuelResults(players){
+  const medals = ['🥇','🥈','🥉'];
+  const rows = players.slice(0,3).map((p,i)=>`
+    <div class="duel-res-row ${i===0?'winner':''}">
+      <div class="drr-rank">${medals[i]||'#'+(i+1)}</div>
+      <div class="drr-info">
+        <div class="drr-name">${p.name}</div>
+        <div class="drr-sub">${p.pct||0}% · ${p.date||''}</div>
+      </div>
+      <div>
+        <div class="drr-score">${(p.score||0).toLocaleString()} pts</div>
+        <div class="drr-pct">+${p.xp||0} XP</div>
+      </div>
+    </div>`).join('');
+  return `
+    <div style="font-size:13px;font-weight:700;margin-bottom:8px;color:var(--tx)">🏆 Résultats du duel</div>
+    <div class="duel-res-card">${rows}</div>
+    <div style="text-align:center;padding:12px;background:linear-gradient(135deg,#FFFBEB,#FEF3C7);border-radius:var(--r10);margin-bottom:8px;font-size:14px;font-weight:700;color:#92400E">
+      🏆 ${players[0]?.name} remporte le duel !
+    </div>`;
+}
+
+// Auto-join via URL param
+(function(){
+  const params = new URLSearchParams(window.location.search);
+  const code = params.get('duel');
+  if(code && code.length === 6){
+    setTimeout(()=>{
+      document.getElementById('joinCodeInput').value = code.toUpperCase();
+      showDuelJoin();
+    }, 500);
+  }
+})();
+
+function showDuelMenu(){ showScr('duel'); }
+function showDuelCreate(){
+  const grid = document.getElementById('duelCatGrid');
+  const cats = [
+    {id:'culture',e:'🌍',n:'Culture'},{id:'maths',e:'🧮',n:'Maths'},
+    {id:'francais',e:'✏️',n:'Français'},{id:'sciences',e:'🔬',n:'Sciences'},
+    {id:'histoire',e:'📜',n:'Histoire'},{id:'sport',e:'⚽',n:'Sport'},
+    {id:'cinema',e:'🎬',n:'Cinéma'},{id:'musique',e:'🎵',n:'Musique'},
+    {id:'tech',e:'💻',n:'Tech'},{id:'monde',e:'🌐',n:'Monde'}
+  ];
+  grid.innerHTML = cats.map(c=>`
+    <div class="duel-cat" onclick="createDuel('${c.id}')">
+      <span class="de">${c.e}</span>
+      <div class="dn">${c.n}</div>
+    </div>`).join('');
+  showScr('duel-create');
+}
 
 function showDuelJoin(){
   document.getElementById('joinCodeInput').value = '';
