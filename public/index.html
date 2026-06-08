@@ -844,8 +844,7 @@ function showDuelJoin(){
 async function createDuel(cat){
   duelState.cat = cat;
   duelState.isCreator = true;
-  // Show loading on button
-  showScr('s-load');
+  document.getElementById('errBox').style.display='none';
   document.getElementById('ldIco').textContent = '⚔️';
   document.querySelectorAll('.ls').forEach(el => el.className='ls');
   [1,2,3,4].forEach((id,i)=>setTimeout(()=>{
@@ -921,16 +920,19 @@ async function joinDuelByCode(){
 }
 
 async function saveDuelScore(pts, xp, ok, total){
-  const name = P.savedName || 'Joueur';
+  const code = duelState.code;
+  if(!code){ console.error('Pas de code duel'); return null; }
+  // Nom du joueur : utilise le pseudo sauvegardé ou génère un nom unique
+  const name = P.savedName || (duelState.isCreator ? 'Joueur 1' : 'Joueur 2');
   try {
-    const resp = await fetch('/api/duel?code=' + duelState.duelCode, {
+    const resp = await fetch('/api/duel?code=' + code, {
       method: 'POST',
       headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({ code: duelState.duelCode, name, score: pts, xp, correct: ok, total })
+      body: JSON.stringify({ code, name, score: pts, xp, correct: ok, total })
     });
     const data = await resp.json();
     return data;
-  } catch(e) { return null; }
+  } catch(e) { console.error('Erreur save duel:', e); return null; }
 }
 
 // Override renderRes to handle duel mode
