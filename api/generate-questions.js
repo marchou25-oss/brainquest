@@ -2,17 +2,30 @@
 const https = require('https');
 
 const CAT_NAMES = {
-  culture:  "la culture générale (géographie, arts, littérature, musique, sport, gastronomie…)",
-  maths:    "les mathématiques (arithmétique, géométrie, logique, algèbre, probabilités…)",
-  francais: "la langue française (grammaire, orthographe, vocabulaire, figures de style, littérature…)",
-  sciences: "les sciences (biologie, chimie, physique, astronomie, environnement, corps humain…)",
-  histoire: "l'histoire et la géographie (France, monde, grandes dates, personnages, pays, capitales…)",
-  sport:    "le sport (football, tennis, basket, JO, champions du monde, records, athlètes célèbres, règles des sports…)",
-  cinema:   "le cinéma et les séries (films cultes, acteurs, réalisateurs, oscars, séries populaires, personnages fictifs…)",
-  musique:  "la musique (artistes français et internationaux, albums mythiques, genres musicaux, histoire de la musique, chansons célèbres…)",
-  tech:     "la technologie et les jeux vidéo (inventions, applications célèbres, personnages de jeux vidéo, histoire du web, réseaux sociaux, gadgets…)",
-  monde:    "le monde et la société (pays, cultures, traditions, gastronomie mondiale, phénomènes sociaux, records mondiaux, drapeaux…)",
-  random:   "un mélange surprise de thèmes très variés : chaque question doit venir d'un domaine DIFFÉRENT parmi culture générale, maths, français, sciences, histoire, sport, cinéma, musique, technologie et monde. Les 5 questions doivent absolument couvrir 5 domaines distincts, une question par domaine."
+  culture:  "la culture générale",
+  maths:    "les mathématiques",
+  francais: "la langue française",
+  sciences: "les sciences",
+  histoire: "l'histoire et la géographie",
+  sport:    "le sport",
+  cinema:   "le cinéma et les séries",
+  musique:  "la musique",
+  tech:     "la technologie et les jeux vidéo",
+  monde:    "le monde et la société",
+  random:   "un mélange de domaines très variés (chaque question doit venir d'un domaine DIFFÉRENT)"
+};
+
+const CAT_SUBTOPICS = {
+  culture:  ["géographie mondiale","littérature classique","mythologie","gastronomie","proverbes","animaux","inventions célèbres","arts et peinture","architecture","religions du monde"],
+  maths:    ["arithmétique mentale","géométrie plane","logique et déduction","statistiques","nombres premiers","fractions et pourcentages","algèbre","mesures et conversions","probabilités","suites numériques"],
+  francais: ["grammaire et conjugaison","orthographe","figures de style","étymologie","homophones","locutions latines","littérature française","vocabulaire rare","synonymes","ponctuation"],
+  sciences: ["corps humain","chimie des éléments","physique classique","astronomie","biologie animale","botanique","écologie","médecine","génétique","géologie"],
+  histoire: ["Antiquité","Moyen-Âge","Révolution française","guerres mondiales","exploration et découvertes","civilisations disparues","Présidents français","traités et accords","Révolution industrielle","histoire africaine"],
+  sport:    ["football mondial","JO été et hiver","tennis grand chelem","cyclisme","natation","athlétisme","basket-ball","formule 1","rugby","sports extrêmes"],
+  cinema:   ["films cultes français","Hollywood classique","réalisateurs légendaires","oscars et césars","séries américaines","animés japonais","science-fiction","comédies cultes","thrillers","films d'animation"],
+  musique:  ["pop française","rock classique","rap et hip-hop","jazz et blues","classique","reggae","électro","chansons françaises","boys bands","festivals célèbres"],
+  tech:     ["histoire d'internet","jeux vidéo rétro","jeux vidéo modernes","réseaux sociaux","inventions tech","informatique","smartphones","intelligence artificielle","cryptomonnaies","robots et drones"],
+  monde:    ["capitales du monde","drapeaux","gastronomie internationale","traditions et coutumes","records mondiaux","langues et dialectes","monnaies","religions","géographie physique","démographie"]
 };
 
 module.exports = async function (req, res) {
@@ -23,7 +36,7 @@ module.exports = async function (req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Méthode non autorisée' });
 
   const apiKey = process.env.GROQ_API_KEY;
-  if (!apiKey) return res.status(500).json({ error: "Clé GROQ_API_KEY manquante dans les variables d'environnement Vercel." });
+  if (!apiKey) return res.status(500).json({ error: "Clé GROQ_API_KEY manquante." });
 
   const { category } = req.body || {};
   if (!CAT_NAMES[category]) return res.status(400).json({ error: 'Catégorie invalide : ' + category });
@@ -36,22 +49,40 @@ module.exports = async function (req, res) {
   }
 };
 
+function getSubtopics(category) {
+  const topics = CAT_SUBTOPICS[category] || [];
+  if (topics.length === 0) return '';
+  const shuffled = topics.sort(() => Math.random() - 0.5).slice(0, 5);
+  return `\nSous-thèmes OBLIGATOIRES pour cette partie (1 question par sous-thème) : ${shuffled.join(', ')}.`;
+}
+
 function callGroq(category, apiKey) {
   return new Promise((resolve, reject) => {
+    const subtopics = category === 'random' ? '' : getSubtopics(category);
+    const seed = Date.now();
+
     const prompt =
-      `Génère exactement 5 questions de quiz originales sur ${CAT_NAMES[category]} pour des joueurs français de 10-25 ans.\n` +
-      `Varie les niveaux (2 faciles, 2 moyennes, 1 difficile). Sois créatif et surprenant.\n` +
-      `Réponds UNIQUEMENT avec un tableau JSON valide, sans markdown :\n` +
-      `[{"q":"Question ?","o":["A","B","C","D"],"a":0,"e":"Explication courte."}]`;
+      `Tu es un expert en quiz éducatifs avec une rigueur académique absolue.\n\n` +
+      `Génère exactement 5 questions de quiz sur ${CAT_NAMES[category]} pour des joueurs français de 10-25 ans.\n` +
+      `${subtopics}\n\n` +
+      `RÈGLES DE QUALITÉ STRICTES :\n` +
+      `1. Chaque réponse correcte DOIT être un fait indiscutable et vérifiable\n` +
+      `2. Les 3 mauvaises réponses doivent être plausibles mais clairement incorrectes\n` +
+      `3. JAMAIS de questions ambiguës ou dont la réponse peut être contestée\n` +
+      `4. JAMAIS deux questions sur le même sous-thème\n` +
+      `5. Varie les difficultés : 2 faciles, 2 moyennes, 1 difficile\n` +
+      `6. Clé de variation unique : ${seed} — génère des questions VRAIMENT différentes à chaque fois\n\n` +
+      `Réponds UNIQUEMENT avec ce tableau JSON valide, sans markdown, sans texte autour :\n` +
+      `[{"q":"Question ?","o":["Option A","Option B","Option C","Option D"],"a":0,"e":"Explication courte et précise."}]`;
 
     const payload = JSON.stringify({
       model: "llama-3.3-70b-versatile",
       messages: [
-        { role: "system", content: "Tu es un expert en quiz éducatifs. Tu réponds UNIQUEMENT avec un tableau JSON valide, sans markdown." },
+        { role: "system", content: "Tu es un expert en quiz éducatifs avec une rigueur académique stricte. Tu réponds UNIQUEMENT avec un tableau JSON valide, sans markdown." },
         { role: "user", content: prompt }
       ],
-      temperature: 0.9,
-      max_tokens: 1500
+      temperature: 1.0,
+      max_tokens: 2000
     });
 
     const options = {
